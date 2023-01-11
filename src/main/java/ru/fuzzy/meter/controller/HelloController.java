@@ -18,6 +18,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import ru.fuzzy.meter.HelloApplication;
+import ru.fuzzy.meter.data.MeterList;
+import ru.fuzzy.meter.model.Meter;
 
 public class HelloController {
 
@@ -26,10 +28,12 @@ public class HelloController {
     }
 
     public static void setAddMeterStageNull() {
-       addMeterStage = null;
+        addMeterStage = null;
     }
 
     private static Stage addMeterStage;
+
+    private Meter currentMeter;
 
 
     @FXML
@@ -45,7 +49,7 @@ public class HelloController {
     private Pane mainPane;
 
     @FXML
-    private Button meterButton;
+    private ComboBox meterButton;
 
     @FXML
     private Button nextButton;
@@ -71,14 +75,19 @@ public class HelloController {
     @FXML
     void initialize() {
         Calendar calendar = Calendar.getInstance();
-        String[] monthNames = { "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь" };
+        String[] monthNames = {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
         String month = monthNames[calendar.get(Calendar.MONTH)];
         monthLabel.setText(month);
         timeLabel.setTextAlignment(TextAlignment.RIGHT);
 
+        fillMeter(MeterList.getInstances().getMeterList().get(0));
+        currentMeter = MeterList.getInstances().getMeterList().get(0);
 
+        for (Meter meter : MeterList.getInstances().getMeterList()) {
+            meterButton.getItems().add(meter.getSerial());
+        }
         addNewOwnerMenu.setOnAction(actionEvent -> {
-            if (addMeterStage == null){
+            if (addMeterStage == null) {
                 try {
                     FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("addNewMeter.fxml"));
                     addMeterStage = new Stage();
@@ -93,17 +102,41 @@ public class HelloController {
 
 
         editButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            if (serialField.isEditable()){
+            if (serialField.isEditable()) {
                 serialField.setEditable(false);
+                currentMeter.setSerial(Integer.valueOf(serialField.getText()));
+
                 ownerField.setEditable(false);
+                currentMeter.setOwner(ownerField.getText());
+
+                meterData.setEditable(false);
+                currentMeter.setData(Integer.valueOf(meterData.getText()));
+
+                meterButton.getItems().clear();
+                for (Meter meter : MeterList.getInstances().getMeterList()) {
+                    meterButton.getItems().add(meter.getSerial());
+                }
+
                 editButton.setText("Ред.");
-            }else {
+            } else {
                 serialField.setEditable(true);
                 ownerField.setEditable(true);
+                meterData.setEditable(true);
                 editButton.setText("Сохр.");
             }
 
         });
+
+        meterButton.setOnAction(actionEvent -> {
+                    final String s = meterButton.getValue().toString();
+                    System.out.println(s);
+                    currentMeter = MeterList.getInstances().getMeterList().stream()
+                            .filter(m -> m.getSerial() == Integer.parseInt(s))
+                            .findFirst().get();
+                    fillMeter(currentMeter);
+                }
+
+        );
 
 
         new AnimationTimer() {
@@ -114,6 +147,16 @@ public class HelloController {
                 timeLabel.setText(format);
             }
         }.start();
+    }
+
+    public void fillMeter(Meter meter) {
+
+        if (meter != null) {
+            ownerField.setText(meter.getOwner());
+            serialField.setText(String.valueOf(meter.getSerial()));
+            meterData.setText(String.valueOf(meter.getData()));
+
+        }
     }
 
 }

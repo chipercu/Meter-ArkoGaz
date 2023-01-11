@@ -12,6 +12,9 @@ public class Meter {
         this.data = data;
     }
 
+    public Meter() {
+    }
+
     public String getOwner() {
         return owner;
     }
@@ -34,5 +37,17 @@ public class Meter {
 
     public void setData(Integer data) {
         this.data = data;
+    }
+
+
+
+
+    @Override
+    public String toString() {
+        return "Meter{" +
+                "owner='" + owner + '\'' +
+                ", serial=" + serial +
+                ", data=" + data +
+                '}';
     }
 }
